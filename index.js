@@ -8,7 +8,9 @@ const app = express();
 
 //Conectar MongoDB
 mongoose.Promise = global.Promise;
+
 mongoose.connect('mongodb://localhost/restapis');
+mongoose.connection.on('connected', () => console.log('connected'));
 
 
 // Habilitar boduparser
@@ -29,7 +31,7 @@ app.use(function (err, req, res, next) { // 5XX -> errores internos del servidor
 
 
 //Puerto donde va a funcionar
-app.listen(5000);
+app.listen(4000);
 
 
 

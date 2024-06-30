@@ -39,7 +39,7 @@ exports.mostrarClientes = async (req, res, next) => {
     } catch (error) {
         // Si hay un error, console.log y next
         console.log(error);
-        next();
+        next(new CustomError("error interno del servidor", 500))
 
     }
 }
