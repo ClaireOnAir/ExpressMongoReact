@@ -1,25 +1,37 @@
+const CustomError = require('../error');
 const Clientes = require('../models/Clientes');
+const { emailValidator } = require('./emailValidator');
 
 // Agrega un nuevo cliente
-exports.nuevoCliente = async(req,res,next) =>{
+exports.nuevoCliente = async (req, res, next) => {
     const Cliente = new Clientes(req.body);
+
+    const email = Cliente.email;
+    try {
+        emailValidator(email)
+    } catch (error) {
+        next(error)
+    }
 
     try {
         // Almacenar registro
-        await Cliente.save();
-        res.json({mensaje: 'Se agrego un nuevo cliente'})
+        const savedClient = await Cliente.save();
+        res.status(200);
+        res.json({ id: savedClient._id })
     } catch (error) {
         // Si hay un error, console.log y next
         console.log(error);
-        next();
-        
+        if (error.code == 11000) {
+            next(new CustomError("email ya está en uso", 400))
+        }
+        next(new CustomError("error interno del servidor", 500))
     }
 }
 
 
 // Muestra todos los clientes
-exports.mostrarClientes = async(req,res,next) =>{
-    
+exports.mostrarClientes = async (req, res, next) => {
+
     try {
         // Buscamos y mostramos todos los clientes
         const clientes = await Clientes.find({})
@@ -28,6 +40,6 @@ exports.mostrarClientes = async(req,res,next) =>{
         // Si hay un error, console.log y next
         console.log(error);
         next();
-        
+
     }
 }
