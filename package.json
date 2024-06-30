@@ -4,7 +4,8 @@
   "description": "Aprendiendo a Crear REST APIs",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon ./index.js"
+    "start": "nodemon ./index.js",
+    "debug": "nodemon --inspect index.js"
   },
   "author": "",
   "license": "ISC",
