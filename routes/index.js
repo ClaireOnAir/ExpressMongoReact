@@ -11,7 +11,6 @@ module.exports = function(){
     router.get('/clientes', clienteController.mostrarClientes);
 
     // Muestra un cliente en específico por ID
-
     router.get('/clientes/:idCliente', clienteController.mostrarCliente);
 
     // Actualizar cliente
@@ -19,6 +18,14 @@ module.exports = function(){
 
     // Eliminar cliente
     router.delete('/clientes/:idCliente', clienteController.eliminarCliente);
+
+
+
+    /** PRODUCTOS */
+    // Nuevos productos
+    router.post('/productos', 
+        productosController.subirArchivo,
+        productosController.nuevoProducto);
 
 
     return router;
