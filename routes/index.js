@@ -3,6 +3,8 @@ const router = express.Router();
 const clienteController = require('../controllers/clienteController');
 const productosController = require('../controllers/productosController');
 
+
+
 module.exports = function(){
     //Agrega nuevos clientes via POST
     router.post('/clientes', clienteController.nuevoCliente);
@@ -22,10 +24,24 @@ module.exports = function(){
 
 
     /** PRODUCTOS */
+
     // Nuevos productos
     router.post('/productos', 
         productosController.subirArchivo,
         productosController.nuevoProducto);
+
+
+    // Mostrar todos los los productos
+    router.get('/productos', productosController.mostrarProductos);
+
+    // Muestra un producto en específico por ID
+    router.get('/productos/:idProducto', productosController.mostrarProducto);
+
+    // Actualizar productos
+    router.put('/productos/:idProducto', 
+        productosController.subirArchivo,
+        productosController.actualizarProducto
+    )
 
 
     return router;

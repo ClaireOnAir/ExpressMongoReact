@@ -54,3 +54,53 @@ exports.nuevoProducto = async (req, res, next)  => {
         next(error);
     }
 }
+
+
+// Muestra todos los productos
+
+exports.mostrarProductos = async (req, res, next) => {
+    try {
+        // Buscamos y mostramos todos los clientes
+        const productos = await Productos.find({});
+        res.json(productos);
+    } catch (error) {
+        // Manejo de errores
+        res.status(500).json({ mensaje: 'Error al mostrar los productos'});
+        next(error);
+    }
+}
+
+
+// Muestra un producto por su ID
+exports.mostrarProducto = async (req, res, next) => {
+    try {
+        const producto = await Productos.findById(req.params.idProducto);
+
+        if (!producto) {
+            return res.status(404).json({ mensaje: 'Ese producto no existe' });
+        }
+        // Mostrar cliente
+        res.json(producto);
+    } catch (error) {
+        // Manejo de errores
+        res.status(500).json({ mensaje: 'Error al buscar el producto' });
+        next(error);
+    }
+}
+
+// Actualiza un producto por su ID
+
+exports.actualizarProducto = async (req, res, next) => {
+    try {
+        const producto = await Productos.findOneAndUpdate({_id : req.params.idProducto}, 
+            req.body, {
+                new : true,
+            }
+        );
+        res.json(producto);
+        
+    } catch (error) {
+        res.status(500).json({ mensaje: 'Error al buscar el producto'});
+        next(error);
+    }
+}
