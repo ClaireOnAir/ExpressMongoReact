@@ -1,8 +1,8 @@
 const Productos= require('../models/Productos');
-
 const multer = require('multer');
 const shortid = require('shortid');
 const fs = require('fs');
+const path = require('path');
 
 const configuracionMulter = {
     storage: fileStorage = multer.diskStorage({
@@ -38,7 +38,6 @@ exports.subirArchivo = (req, res, next) => {
 
 
 // agrega nuevo producto
-
 exports.nuevoProducto = async (req, res, next)  => {
     const producto = new Productos(req.body);
     try {
@@ -57,7 +56,6 @@ exports.nuevoProducto = async (req, res, next)  => {
 
 
 // Muestra todos los productos
-
 exports.mostrarProductos = async (req, res, next) => {
     try {
         // Buscamos y mostramos todos los clientes
@@ -92,8 +90,20 @@ exports.mostrarProducto = async (req, res, next) => {
 
 exports.actualizarProducto = async (req, res, next) => {
     try {
-        const producto = await Productos.findOneAndUpdate({_id : req.params.idProducto}, 
-            req.body, {
+
+        // Construir nuevo producto
+        let nuevoProducto = req.body;
+
+        // Verificar si hay imagen nueva
+        if (req.file) {
+            nuevoProducto.imagen = req.file.filename;
+        } else {
+            let productoAnterior = await Productos.findById(req.params.idProducto);
+            nuevoProducto.imagen = productoAnterior.imagen;
+        }
+
+        let producto = await Productos.findOneAndUpdate({_id : req.params.idProducto}, 
+            nuevoProducto, {
                 new : true,
             }
         );
@@ -102,5 +112,33 @@ exports.actualizarProducto = async (req, res, next) => {
     } catch (error) {
         res.status(500).json({ mensaje: 'Error al buscar el producto'});
         next(error);
+    }
+}
+
+// Eliminar producto por ID
+exports.eliminarProducto = async (req, res, next) => {
+    try {
+        // Encuentra el producto por ID
+        const producto = await Productos.findById(req.params.idProducto);
+        
+        if (!producto) {
+            return res.status(404).json({ mensaje: 'Producto no encontrado' });
+        }
+
+        // Elimina el producto de la base de datos
+        await Productos.findByIdAndDelete(req.params.idProducto);
+
+        // Obtén la ruta de la imagen y elimina el archivo
+        const imagePath = path.join(__dirname, '..', 'uploads', producto.imagen); 
+        fs.unlink(imagePath, (err) => {
+            if (err) {
+                console.log('Error al eliminar la imagen:', err);
+                return res.status(500).json({ mensaje: 'Error al eliminar la imagen del servidor' });
+            }
+            res.json({ mensaje: 'El producto y su imagen se han eliminado' });
+        });
+    } catch (error) {
+        console.log(error);
+        next();
     }
 }
