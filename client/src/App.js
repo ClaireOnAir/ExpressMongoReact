@@ -1,23 +1,42 @@
-import React, {Fragment} from "react";
+import React, { Fragment } from "react";
+// Routing
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 
 /*** Layout */
 import Header from './componentes/layout/Header';
 import Navegacion from './componentes/layout/Navegacion';
 
+/** Componentes */
+import Clientes from './componentes/clientes/Clientes';
+import Productos from './componentes/productos/Productos';
+import Pedidos from './componentes/pedidos/Pedidos';
+
 function App() {
-  return(
-    <Fragment>
-      <Header />
+  return (
+    <Router>
+      <Fragment>
+        <Header />
 
-      <div class="grid contenedor contenido-principal">
-        <Navegacion />  
-        
-        <main class="caja-contenido col-9">
-        </main>
-      </div>
+        <div className="grid contenedor contenido-principal">
+          <Navegacion />
 
-    </Fragment>
-  )
+          <main className="caja-contenido col-9">
+            <Routes>
+
+              <Route exact path="/" element={<Clientes/>}/>
+
+              <Route exact path="/productos" element={<Productos/>}/>
+
+              <Route exact path="/pedidos" element={<Pedidos/>}/>
+
+            </Routes>
+          </main>
+        </div>
+
+      </Fragment>
+    </Router>
+  );
 }
 
 export default App;
+
