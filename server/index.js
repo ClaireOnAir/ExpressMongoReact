@@ -3,6 +3,10 @@ const routes = require('./routes');
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
 
+// Cors permite que un cliente se conecte a otro servidor para el intercambio de info
+const cors = require('cors');
+
+
 //Crear el servidor
 const app = express();
 
@@ -14,6 +18,9 @@ mongoose.connect('mongodb://localhost/restapis');
 // Habilitar boduparser
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
+
+// Habilitar cors
+app.use(cors());
 
 //Rutas de la app
 app.use('/', routes());
