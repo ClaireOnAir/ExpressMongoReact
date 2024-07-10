@@ -1,6 +1,11 @@
 import React, { Fragment, useEffect, useState } from 'react';
 import clienteAxios from '../../config/axios';
 
+import Cliente from './Cliente'
+import { Link } from 'react-router-dom';
+
+
+
 function Clientes() {
     const [clientes, guardarClientes] = useState([]);
 
@@ -20,11 +25,16 @@ function Clientes() {
     return (
         <Fragment>
             <h2>Clientes</h2>
+
+            <Link to ={"/clientes/nuevo"} className="btn btn-verde nvo-cliente"> <i className="fas fa-plus-circle"></i>
+                Nuevo Cliente
+            </Link>
+
             <ul className="listado-clientes">
                 {clientes.map(cliente => (
-                    <li key={cliente._id}>
-                        {cliente.nombre} {cliente.apellido} - {cliente.empresa}
-                    </li>
+                    <Cliente
+                        key = {cliente._id}
+                        cliente = {cliente} />
                 ))}
             </ul>
         </Fragment>
