@@ -4,55 +4,56 @@ const shortid = require('shortid');
 const fs = require('fs');
 const path = require('path');
 
+// Configuración de multer
+const fileStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, path.join(__dirname, '../../uploads/')); // Asegúrate de que la ruta sea correcta
+    },
+    filename: (req, file, cb) => {
+        const extension = file.mimetype.split('/')[1];
+        cb(null, `${shortid.generate()}.${extension}`);
+    }
+});
+
 const configuracionMulter = {
-    storage: fileStorage = multer.diskStorage({
-        destination: (req, file, cb) => {
-            cb(null, __dirname + '../../uploads/');
-        },
-        filename: (req, file, cb) => {
-            const extension = file.mimetype.split('/')[1];
-            cb(null, `${shortid.generate()}.${extension}`);
-        }
-    }),
+    storage: fileStorage,
     fileFilter(req, file, cb) {
         if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
             cb(null, true);
         } else {
-            cb(new Error('Formato no válido'))
+            cb(new Error('Formato no válido'));
         }
     }
-}
+};
 
-// Pasar la configiguración y el campo
+// Pasar la configuración y el campo
 const upload = multer(configuracionMulter).single('imagen');
 
-// Sube un archivo
+// Middleware para subir un archivo
 exports.subirArchivo = (req, res, next) => {
     upload(req, res, function (error) {
         if (error) {
-            res.json({ mensaje: error })
+            return res.json({ mensaje: error.message }); // Asegúrate de enviar el mensaje de error correctamente
         }
-        return next();
-    })
-}
+        next();
+    });
+};
 
-
-// agrega nuevo producto
-exports.nuevoProducto = async (req, res, next)  => {
+// Agrega nuevo producto
+exports.nuevoProducto = async (req, res, next) => {
     const producto = new Productos(req.body);
     try {
-        if(req.file.filename){
-            producto.imagen = req.file.filename
+        if (req.file && req.file.filename) { // Asegúrate de que req.file exista antes de acceder a filename
+            producto.imagen = req.file.filename;
         }
         // Almacenar registro
         await producto.save();
         res.status(201).json({ mensaje: 'Se agregó un nuevo producto' });
     } catch (error) {
-        // Manejo de errores
-        res.status(500).json({ mensaje: 'Error al agregar el producto'});
+        res.status(500).json({ mensaje: 'Error al agregar el producto' });
         next(error);
     }
-}
+};
 
 
 // Muestra todos los productos
@@ -128,17 +129,29 @@ exports.eliminarProducto = async (req, res, next) => {
         // Elimina el producto de la base de datos
         await Productos.findByIdAndDelete(req.params.idProducto);
 
-        // Obtén la ruta de la imagen y elimina el archivo
-        const imagePath = path.join(__dirname, '..', 'uploads', producto.imagen); 
-        fs.unlink(imagePath, (err) => {
+        // Obtén la ruta de la imagen
+        const imagePath = path.join(__dirname, '..', '..', 'uploads', producto.imagen);
+
+        // Verifica si el archivo de imagen existe antes de eliminarlo
+        fs.access(imagePath, fs.constants.F_OK, (err) => {
             if (err) {
-                console.log('Error al eliminar la imagen:', err);
-                return res.status(500).json({ mensaje: 'Error al eliminar la imagen del servidor' });
+                console.log('La imagen no existe, pero el producto ha sido eliminado.');
+                return res.json({ mensaje: 'El producto ha sido eliminado, pero la imagen no se encontró.' });
             }
-            res.json({ mensaje: 'El producto y su imagen se han eliminado' });
+
+            // Elimina el archivo de imagen
+            fs.unlink(imagePath, (err) => {
+                if (err) {
+                    console.log('Error al eliminar la imagen:', err);
+                    return res.status(500).json({ mensaje: 'Error al eliminar la imagen del servidor' });
+                }
+                res.json({ mensaje: 'El producto y su imagen se han eliminado' });
+            });
         });
+
     } catch (error) {
-        console.log(error);
-        next();
+        console.error('Error al eliminar el producto:', error);
+        res.status(500).json({ mensaje: 'Error al eliminar el producto' });
+        next(error);
     }
 }

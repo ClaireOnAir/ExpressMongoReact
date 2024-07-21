@@ -7,11 +7,11 @@ exports.nuevoCliente = async (req, res, next) => {
     try {
         // Almacenar registro
         await cliente.save();
-        res.status(201).json({ mensaje: 'Se agregó un nuevo cliente' });
+        res.json({ mensaje: 'Se agrego un nuevo cliente'});
     } catch (error) {
         // Manejo de errores
-        res.status(500).json({ mensaje: 'Error al agregar el cliente'});
-        next(error);
+        res.send(error);
+        next();
     }
 }
 
