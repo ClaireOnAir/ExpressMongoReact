@@ -1,73 +1,69 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const clienteController = require('../controllers/clienteController');
-const productosController = require('../controllers/productosController');
-const pedidosController = require('../controllers/pedidosController');
+const clienteController = require("../controllers/clienteController");
+const productosController = require("../controllers/productosController");
+const pedidosController = require("../controllers/pedidosController");
 
+module.exports = function () {
+  //Agrega nuevos clientes via POST
+  router.post("/clientes", clienteController.nuevoCliente);
 
+  // Obtener todos los clientes
+  router.get("/clientes", clienteController.mostrarClientes);
 
-module.exports = function(){
-    //Agrega nuevos clientes via POST
-    router.post('/clientes', clienteController.nuevoCliente);
+  // Muestra un cliente en específico por ID
+  router.get("/clientes/:idCliente", clienteController.mostrarCliente);
 
-    // Obtener todos los clientes
-    router.get('/clientes', clienteController.mostrarClientes);
+  // Actualizar cliente
+  router.put("/clientes/:idCliente", clienteController.actualizarCliente);
 
-    // Muestra un cliente en específico por ID
-    router.get('/clientes/:idCliente', clienteController.mostrarCliente);
+  // Eliminar cliente
+  router.delete("/clientes/:idCliente", clienteController.eliminarCliente);
 
-    // Actualizar cliente
-    router.put('/clientes/:idCliente',clienteController.actualizarCliente);
+  /** PRODUCTOS */
 
-    // Eliminar cliente
-    router.delete('/clientes/:idCliente', clienteController.eliminarCliente);
+  // Nuevos productos
+  router.post(
+    "/productos",
+    productosController.subirArchivo,
+    productosController.nuevoProducto
+  );
 
+  // Mostrar todos los los productos
+  router.get("/productos", productosController.mostrarProductos);
 
+  // Muestra un producto en específico por ID
+  router.get("/productos/:idProducto", productosController.mostrarProducto);
 
-    /** PRODUCTOS */
+  // Actualizar productos
+  router.put(
+    "/productos/:idProducto",
+    productosController.subirArchivo,
+    productosController.actualizarProducto
+  );
 
-    // Nuevos productos
-    router.post('/productos', 
-        productosController.subirArchivo,
-        productosController.nuevoProducto);
+  // Eliminar productos
+  router.delete("/productos/:idProducto", productosController.eliminarProducto);
 
-    // Mostrar todos los los productos
-    router.get('/productos', productosController.mostrarProductos);
+  // Busqueda de productos
+  router.post("/productos/busqueda/:query", productosController.buscarProducto);
 
-    // Muestra un producto en específico por ID
-    router.get('/productos/:idProducto', productosController.mostrarProducto);
+  /** PEDIDOS */
 
-    // Actualizar productos
-    router.put('/productos/:idProducto', 
-        productosController.subirArchivo,
-        productosController.actualizarProducto
-    )
-    
-    // Eliminar productos
-    router.delete('/productos/:idProducto', productosController.eliminarProducto)
+  // Agregar nuevos pedidos
+  router.post("/pedidos", pedidosController.nuevoPedido);
 
+  // Mostrar todos los pedidos
+  router.get("/pedidos", pedidosController.mostrarPedidos);
 
+  // Mostrar un pedido por su ID
+  router.get("/pedidos/:idPedido", pedidosController.mostrarPedido);
 
+  // Actualizar pedidos
+  router.put("/pedidos/:idPedido", pedidosController.actualizarPedido);
 
-    /** PEDIDOS */
+  // Eliminar un pedido
+  router.put("/pedidos/:idPedido", pedidosController.eliminarPedido);
 
-    // Agregar nuevos pedidos
-    router.post('/pedidos', pedidosController.nuevoPedido);
-
-    // Mostrar todos los pedidos
-    router.get('/pedidos', pedidosController.mostrarPedidos);
-
-    // Mostrar un pedido por su ID
-    router.get('/pedidos/:idPedido', pedidosController.mostrarPedido);
-
-    // Actualizar pedidos
-    router.put('/pedidos/:idPedido', pedidosController.actualizarPedido);
-
-    // Eliminar un pedido
-    router.put('/pedidos/:idPedido', pedidosController.eliminarPedido);
-
-
-    return router;
-}
-
-
+  return router;
+};
