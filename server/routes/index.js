@@ -51,7 +51,7 @@ module.exports = function () {
   /** PEDIDOS */
 
   // Agregar nuevos pedidos
-  router.post("/pedidos", pedidosController.nuevoPedido);
+  router.post("/pedidos/nuevo/:idUsuario", pedidosController.nuevoPedido);
 
   // Mostrar todos los pedidos
   router.get("/pedidos", pedidosController.mostrarPedidos);
@@ -63,7 +63,7 @@ module.exports = function () {
   router.put("/pedidos/:idPedido", pedidosController.actualizarPedido);
 
   // Eliminar un pedido
-  router.put("/pedidos/:idPedido", pedidosController.eliminarPedido);
+  router.delete("/pedidos/:idPedido", pedidosController.eliminarPedido);
 
   return router;
 };
