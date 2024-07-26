@@ -1,47 +1,67 @@
-import React, { Fragment, useEffect, useState } from 'react';
-import clienteAxios from '../../config/axios';
-
-import Cliente from './Cliente'
-import { Link } from 'react-router-dom';
-import Spinner from '../layout/Spinner';
-
+import React, { useEffect, useState, Fragment, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import clienteAxios from "../../config/axios";
+import Cliente from "./Cliente";
+import Spinner from "../layout/Spinner";
+import { CRMContext } from "../../context/CRMContext";
 
 function Clientes() {
-    const [clientes, guardarClientes] = useState([]);
+  const [clientes, guardarClientes] = useState([]);
+  const [auth, guardarAuth] = useContext(CRMContext);
+  let navigate = useNavigate();
+
+  useEffect(() => {
+    if (!auth.auth || localStorage.getItem("token") !== auth.token) {
+      navigate("/iniciar-sesion");
+      return;
+    }
 
     const consultarAPI = async () => {
-        try {
-            const clientesConsulta = await clienteAxios.get('/clientes');
-            guardarClientes(clientesConsulta.data);
-        } catch (error) {
-            console.error("Error al consultar la API:", error);
+      try {
+        const clientesConsulta = await clienteAxios.get("/clientes", {
+          headers: {
+            Authorization: `Bearer ${auth.token}`,
+          },
+        });
+        guardarClientes(clientesConsulta.data);
+      } catch (error) {
+        if (error.response.status === 500) {
+          navigate("/iniciar-sesion");
         }
+      }
     };
 
-    useEffect(() => {
-        consultarAPI();
-    }, [clientes]); // Solo se ejecuta una vez al montar el componente
+    consultarAPI();
+  }, [auth, navigate]);
 
-     // Spinner de carga
-     if(!clientes.length) return <Spinner />
+  if (!clientes.length) return <Spinner />;
 
-    return (
-        <Fragment>
-            <h2>Clientes</h2>
-
-            <Link to ={"/clientes/nuevo"} className="btn btn-verde nvo-cliente"> <i className="fas fa-plus-circle"></i>
-                Nuevo Cliente
-            </Link>
-
-            <ul className="listado-clientes">
-                {clientes.map(cliente => (
-                    <Cliente
-                        key = {cliente._id}
-                        cliente = {cliente} />
-                ))}
-            </ul>
-        </Fragment>
+  const eliminarClienteDelEstado = (idCliente) => {
+    const nuevosClientes = clientes.filter(
+      (cliente) => cliente._id !== idCliente
     );
+    guardarClientes(nuevosClientes);
+  };
+
+  return (
+    <Fragment>
+      <h2>Clientes</h2>
+      <Link to={"/clientes/nuevo"} className="btn btn-verde nvo-cliente">
+        <i className="fas fa-plus-circle"></i>
+        Nuevo Cliente
+      </Link>
+
+      <ul className="listado-clientes">
+        {clientes.map((cliente) => (
+          <Cliente
+            key={cliente._id}
+            cliente={cliente}
+            eliminarClienteDelEstado={eliminarClienteDelEstado}
+          />
+        ))}
+      </ul>
+    </Fragment>
+  );
 }
 
 export default Clientes;

@@ -1,9 +1,10 @@
-import React, { useState, useEffect, Fragment } from "react";
+import React, { useState, useEffect, Fragment, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import clienteAxios from "../../config/axios";
 import FormBuscarProducto from "./FormBuscarProducto";
 import FormCantidadProducto from "./FormCantidadProducto";
 import Swal from "sweetalert2";
+import { CRMContext } from "../../context/CRMContext";
 
 function NuevoPedido() {
   // Extraer ID de cliente
@@ -16,12 +17,25 @@ function NuevoPedido() {
   const [productos, guardarProductos] = useState([]);
   const [total, guardarTotal] = useState(0);
 
+  // utilizar valores del context
+  const [auth, guardarAuth] = useContext(CRMContext);
+
   useEffect(() => {
+    // Verificar si el usuario está autenticado
+    if (!auth.auth || localStorage.getItem("token") !== auth.token) {
+      navigate("/iniciar-sesion");
+      return;
+    }
+
     // obtener el cliente
     const consultarAPI = async () => {
       try {
         // consultar el cliente actual
-        const resultado = await clienteAxios.get(`/clientes/${id}`);
+        const resultado = await clienteAxios.get(`/clientes/${id}`, {
+          headers: {
+            Authorization: `Bearer ${auth.token}`,
+          },
+        });
         guardarCliente(resultado.data);
       } catch (error) {
         Swal.fire({
@@ -34,7 +48,7 @@ function NuevoPedido() {
 
     // llamar a la api
     consultarAPI();
-  }, [id]);
+  }, [id, auth, navigate]);
 
   const buscarProducto = async (e) => {
     e.preventDefault();
@@ -52,7 +66,13 @@ function NuevoPedido() {
     try {
       // obtener los productos de la búsqueda
       const resultadoBusqueda = await clienteAxios.post(
-        `/productos/busqueda/${busqueda}`
+        `/productos/busqueda/${busqueda}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${auth.token}`,
+          },
+        }
       );
 
       // si no hay resultados, mostrar una alerta; caso contrario, agregarlo al state
@@ -111,7 +131,15 @@ function NuevoPedido() {
     };
     try {
       // almacenarlo a la base de datos
-      const resultado = await clienteAxios.post(`/pedidos/nuevo/${id}`, pedido);
+      const resultado = await clienteAxios.post(
+        `/pedidos/nuevo/${id}`,
+        pedido,
+        {
+          headers: {
+            Authorization: `Bearer ${auth.token}`,
+          },
+        }
+      );
       // leer resultado
       if (resultado.status === 200) {
         Swal.fire({

@@ -1,15 +1,29 @@
-import React, { useEffect, useState, Fragment } from "react";
+import React, { useEffect, useState, Fragment, useContext } from "react";
 import clienteAxios from "../../config/axios";
 import DetallesPedido from "./DetallesPedido";
 import Swal from "sweetalert2";
+import { CRMContext } from "../../context/CRMContext";
+import { useNavigate } from "react-router-dom";
 
 function Pedidos() {
   const [pedidos, guardarPedidos] = useState([]);
+  const [auth, guardarAuth] = useContext(CRMContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
+    // Verificar si el usuario está autenticado
+    if (!auth.auth || localStorage.getItem("token") !== auth.token) {
+      navigate("/iniciar-sesion");
+      return;
+    }
+
     const consultarAPI = async () => {
       try {
-        const resultado = await clienteAxios.get("/pedidos");
+        const resultado = await clienteAxios.get("/pedidos", {
+          headers: {
+            Authorization: `Bearer ${auth.token}`,
+          },
+        });
         console.log("Pedidos - resultado:", resultado.data);
         guardarPedidos(resultado.data);
       } catch (error) {
@@ -21,11 +35,15 @@ function Pedidos() {
       }
     };
     consultarAPI();
-  }, []);
+  }, [auth, navigate]);
 
   const eliminarPedido = async (id) => {
     try {
-      const resultado = await clienteAxios.delete(`/pedidos/${id}`);
+      const resultado = await clienteAxios.delete(`/pedidos/${id}`, {
+        headers: {
+          Authorization: `Bearer ${auth.token}`,
+        },
+      });
       console.log("Eliminar pedido - resultado:", resultado);
       if (resultado.status === 200) {
         Swal.fire("¡Eliminado!", "El pedido ha sido eliminado.", "success");

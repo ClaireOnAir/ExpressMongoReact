@@ -1,18 +1,33 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import clienteAxios from "../../config/axios";
 import Swal from "sweetalert2";
+import { CRMContext } from "../../context/CRMContext";
+import { useNavigate } from "react-router-dom";
 
 function DetallesPedido({ pedido, eliminarPedido }) {
   const { cliente, pedido: articulosPedido, total } = pedido || {};
   const [productos, setProductos] = useState([]);
+  const [auth, guardarAuth] = useContext(CRMContext);
+  const navigate = useNavigate();
 
   useEffect(() => {
+    // Verificar si el usuario está autenticado
+    if (!auth.auth || localStorage.getItem("token") !== auth.token) {
+      navigate("/iniciar-sesion");
+      return;
+    }
+
     const fetchProductos = async () => {
       const productosActualizados = await Promise.all(
         articulosPedido.map(async (articulo) => {
           if (!articulo.producto) {
             const resultado = await clienteAxios.get(
-              `/productos/${articulo._id}`
+              `/productos/${articulo._id}`,
+              {
+                headers: {
+                  Authorization: `Bearer ${auth.token}`,
+                },
+              }
             );
             return { ...articulo, producto: resultado.data };
           }
@@ -25,7 +40,7 @@ function DetallesPedido({ pedido, eliminarPedido }) {
     if (articulosPedido && articulosPedido.length > 0) {
       fetchProductos();
     }
-  }, [articulosPedido]);
+  }, [articulosPedido, auth, navigate]);
 
   if (!cliente || productos.length === 0) {
     return (
